@@ -81,6 +81,10 @@ static NSString *componentStateName(CKComponentControllerState state)
     _previousComponent = _component;
     _component = component;
     _updatingComponent = YES;
+
+    if (_previousComponent.controller == component.controller) {
+      _state = CKComponentControllerStateMounted;
+    }
   }
 
   switch (_state) {
