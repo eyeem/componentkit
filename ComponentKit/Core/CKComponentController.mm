@@ -55,6 +55,7 @@ static NSString *componentStateName(CKComponentControllerState state)
   CKComponentControllerState _state;
   BOOL _updatingComponent;
   CKComponent *_previousComponent;
+  CKComponent *_unmountedComponent;
   std::vector<CKPendingComponentAnimation> _pendingAnimations;
   std::vector<CKAppliedComponentAnimation> _appliedAnimations;
 }
@@ -76,15 +77,15 @@ static NSString *componentStateName(CKComponentControllerState state)
 
 - (void)componentWillMount:(CKComponent *)component
 {
+  if (_unmountedComponent.controller == component.controller) {
+    _state = CKComponentControllerStateMounted;
+  }
+
   if (component != _component) {
     [self willUpdateComponent];
     _previousComponent = _component;
     _component = component;
     _updatingComponent = YES;
-
-    if (_previousComponent.controller == component.controller) {
-      _state = CKComponentControllerStateMounted;
-    }
   }
 
   switch (_state) {
@@ -169,6 +170,8 @@ static NSString *componentStateName(CKComponentControllerState state)
     default:
       CKFailAssert(@"Unexpected state '%@' in %@ (%@)", componentStateName(_state), [self class], _component);
   }
+
+  _unmountedComponent = component;
 }
 
 - (void)_relinquishView
