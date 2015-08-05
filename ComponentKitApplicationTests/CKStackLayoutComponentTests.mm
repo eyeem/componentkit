@@ -33,6 +33,11 @@ static CKStackLayoutComponentChild flexChild(CKComponent *c, BOOL flex)
   return {c, .flexGrow = flex, .flexShrink = flex};
 }
 
+static CKStackLayoutComponentChild flexCollapseChild(CKComponent *c, BOOL collapse)
+{
+  return {c, .flexCollapse = collapse, .flexGrow = !collapse};
+}
+
 - (CKStackLayoutComponent *)_layoutWithJustify:(CKStackLayoutJustifyContent)justify
                                           flex:(BOOL)flex
 {
@@ -641,6 +646,27 @@ static CKStackLayoutComponentChild flexChild(CKComponent *c, BOOL flex)
   // This test verifies the current behavior--the snapshot contains widths 300px, 100px, and 50px.
   static CKSizeRange kSize = {{400, 0}, {400, 150}};
   CKSnapshotVerifyComponent(c, kSize, nil);
+}
+
+- (CKComponent*)_layoutWithCollapseDirection:(CKStackLayoutDirection)direction
+{
+  return [CKStackLayoutComponent
+          newWithView:whiteBg
+          size:{}
+          style:{
+            .direction = direction
+          }
+          children:{
+            flexCollapseChild([CKComponent newWithView:{[UIView class], {{@selector(setBackgroundColor:), [UIColor redColor]}}} size:{50,50}], NO),
+            flexCollapseChild([CKComponent newWithView:{[UIView class], {{@selector(setBackgroundColor:), [UIColor blueColor]}}} size:{50,50}], YES),
+            flexCollapseChild([CKComponent newWithView:{[UIView class], {{@selector(setBackgroundColor:), [UIColor greenColor]}}} size:{50,50}], NO),
+          }];
+}
+
+- (void)testFlexCollapseBehaviors
+{
+  static CKSizeRange kSize = {{50, 0}, {50, 125}};
+  CKSnapshotVerifyComponent([self _layoutWithCollapseDirection:CKStackLayoutDirectionVertical], kSize, @"vertical");
 }
 
 @end

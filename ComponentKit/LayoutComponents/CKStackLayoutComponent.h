@@ -81,6 +81,8 @@ struct CKStackLayoutComponentChild {
   BOOL flexGrow;
   /** If the sum of childrens' stack dimensions is greater than the maximum size, should this component shrink? */
   BOOL flexShrink;
+  /** If the sum of childrens' stack dimensions is greater than the maximum size, should this component collapse to size zero? */
+  BOOL flexCollapse;
   /** Specifies the initial size in the stack dimension for the child. */
   CKRelativeDimension flexBasis;
   /** Orientation of the child along cross axis, overriding alignItems */

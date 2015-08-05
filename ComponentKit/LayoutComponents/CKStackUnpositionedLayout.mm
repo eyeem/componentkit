@@ -194,6 +194,15 @@ static std::function<BOOL(const CKStackUnpositionedItem &)> isFlexibleInViolatio
   }
 }
 
+static std::function<BOOL(const CKStackUnpositionedItem &)> isCollapsibleInViolationDirection(const CGFloat violation)
+{
+  if (fabs(violation) < kViolationEpsilon) {
+    return [](const CKStackUnpositionedItem &l) { return NO; };
+  } else {
+    return [](const CKStackUnpositionedItem &l) { return l.child.flexCollapse; };
+  }
+}
+
 static inline BOOL isFlexibleInBothDirections(const CKStackLayoutComponentChild &child)
 {
   return child.flexGrow && child.flexShrink;
@@ -254,8 +263,35 @@ static void flexChildrenAlongStackDimension(std::vector<CKStackUnpositionedItem>
                                                          const CGSize size,
                                                          const BOOL useOptimizedFlexing)
 {
-  const CGFloat stackDimensionSum = computeStackDimensionSum(items, style);
-  const CGFloat violation = computeViolation(stackDimensionSum, style, sizeRange);
+  CGFloat stackDimensionSum, violation;
+
+  auto computeSizes = [&]() {
+    stackDimensionSum = computeStackDimensionSum(items, style);
+    violation = computeViolation(stackDimensionSum, style, sizeRange);
+  };
+
+  computeSizes();
+
+  // Perform any possible collapses right away
+  BOOL didCollapse = NO;
+  std::function<BOOL(const CKStackUnpositionedItem &)> isCollapse = isCollapsibleInViolationDirection(violation);
+  for (CKStackUnpositionedItem &item : items) {
+    if (isCollapse(item)) {
+      item.layout = crossChildLayout(item.child,
+                                     style,
+                                     0,
+                                     0,
+                                     crossDimension(style.direction, sizeRange.min),
+                                     crossDimension(style.direction, sizeRange.max),
+                                     size);
+      didCollapse = YES;
+    }
+  }
+
+  // if we collapsed some children, need to recompute violation
+  if (didCollapse) {
+    computeSizes();
+  }
 
   // We count the number of children which are flexible in the direction of the violation
   std::function<BOOL(const CKStackUnpositionedItem &)> isFlex = isFlexibleInViolationDirection(violation);
