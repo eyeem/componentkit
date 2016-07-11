@@ -95,7 +95,8 @@ struct CKComponentHostingViewInputs {
   [self _synchronouslyUpdateComponentIfNeeded];
   const CGSize size = self.bounds.size;
   if (_mountedLayout.component != _component || !CGSizeEqualToSize(_mountedLayout.size, size)) {
-    _mountedLayout = CKComponentComputeLayout(_component, {size, size}, size);
+    const CKSizeRange constrainedSize = [_sizeRangeProvider sizeRangeForBoundingSize:size];
+    _mountedLayout = CKComponentComputeLayout(_component, constrainedSize, size);
   }
   _mountedComponents = [CKMountComponentLayout(_mountedLayout, _containerView, _mountedComponents, nil) copy];
 }
@@ -157,7 +158,7 @@ struct CKComponentHostingViewInputs {
       [self _asynchronouslyUpdateComponentIfNeeded];
       break;
     case CKUpdateModeSynchronous:
-      [self setNeedsLayout];
+          [self layoutIfNeeded];
       [_delegate componentHostingViewDidInvalidateSize:self];
       break;
   }
@@ -202,7 +203,7 @@ struct CKComponentHostingViewInputs {
       if (_pendingInputs == *inputs) {
         _scheduledAsynchronousComponentUpdate = NO;
         [self _applyResult:*result];
-        [self setNeedsLayout];
+          [self layoutIfNeeded];
         [_delegate componentHostingViewDidInvalidateSize:self];
       } else {
         [self _scheduleAsynchronousUpdate];
