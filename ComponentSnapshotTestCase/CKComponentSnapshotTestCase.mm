@@ -38,6 +38,7 @@ static CKComponent *_leakyComponent;
   [m attachToView:v];
   return [self compareSnapshotOfView:v
             referenceImagesDirectory:referenceImagesDirectory
+                  imageDiffDirectory:@IMAGE_DIFF_DIR
                           identifier:identifier
                            tolerance:self.tolerance
                                error:errorPtr];
